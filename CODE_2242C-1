@@ -1,0 +1,53 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringBuilder out = new StringBuilder();
+
+        int T = Integer.parseInt(br.readLine());
+
+        while (T-- > 0) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int n = Integer.parseInt(st.nextToken());
+            long k = Long.parseLong(st.nextToken());
+
+            st = new StringTokenizer(br.readLine());
+
+            int[] cnt = new int[n + 1];
+
+            int prev = Integer.parseInt(st.nextToken());
+            int len = 1;
+
+            for (int i = 1; i < n; i++) {
+                int cur = Integer.parseInt(st.nextToken());
+                if (cur == prev) {
+                    len++;
+                } else {
+                    cnt[len]++;
+                    prev = cur;
+                    len = 1;
+                }
+            }
+            cnt[len]++;
+
+            long s1 = 0;
+            long s2 = 0;
+            int ans = 0;
+
+            for (int i = n; i >= 1; i--) {
+                s1 += cnt[i];
+                s2 += s1;
+
+                if (cnt[i] > 0 && k >= s2 && (k - s2) % s1 == 0) {
+                    ans++;
+                }
+            }
+
+            out.append(ans).append('\n');
+        }
+
+        System.out.print(out);
+    }
+}
