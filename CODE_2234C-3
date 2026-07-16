@@ -1,0 +1,125 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int t = Integer.parseInt(br.readLine().trim());
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = Integer.parseInt(br.readLine().trim());
+            long[] h = new long[n];
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            for (int i = 0; i < n; i++) h[i] = Long.parseLong(st.nextToken());
+
+            long[] ans = new long[n];
+
+            for (int start = 0; start < n; start++) {
+                int m = n - 1;
+                long[] eh = new long[m];
+                for (int k = 0; k < m; k++) eh[k] = h[(start + k) % n];
+
+                // positions 0..m, both ends fixed at 0.
+                // value[i] computed via monotonic stack (like max rectangle / trapping water with equality constraints)
+                long[] value = new long[m + 1];
+                value[0] = 0;
+                value[m] = 0;
+
+                // stack holds indices with increasing eh, we process left to right
+                // dp[i] = min(eh[i-1], dp[i-1]) capped so that segments merge when a lower wall is found
+                Deque<int[]> stack = new ArrayDeque<>(); // {position, height}
+                stack.push(new int[]{0, Integer.MAX_VALUE}); // sentinel, height "infinite" at pos0 boundary before actual 0
+
+                // We'll do two-pass: prefix constrained value assuming monotonic stack merging
+                long[] left = new long[m + 1];
+                left[0] = Long.MAX_VALUE; // free
+                Deque<long[]> st1 = new ArrayDeque<>(); // {value}
+                for (int i = 1; i <= m; i++) {
+                    long cur = eh[i - 1];
+                    left[i] = Math.min(left[i - 1], cur);
+                }
+
+                long[] right = new long[m + 1];
+                right[m] = Long.MAX_VALUE;
+                for (int i = m - 1; i >= 0; i--) {
+                    right[i] = Math.min(right[i + 1], eh[i]);
+                }
+
+                long sum = 0;
+                for (int i = 1; i < m; i++) {
+                    sum += Math.min(left[i], right[i]);
+                }
+                ans[start] = sum;
+            }
+
+            for (int i = 0; i < n; i++) {
+                sb.append(ans[i]);
+                if (i < n - 1) sb.append(' ');
+            }
+            sb.append('\n');
+        }
+        System.out.print(sb);
+    }
+}import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int t = Integer.parseInt(br.readLine().trim());
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = Integer.parseInt(br.readLine().trim());
+            long[] h = new long[n];
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            for (int i = 0; i < n; i++) h[i] = Long.parseLong(st.nextToken());
+
+            long[] ans = new long[n];
+
+            for (int start = 0; start < n; start++) {
+                int m = n - 1;
+                long[] eh = new long[m];
+                for (int k = 0; k < m; k++) eh[k] = h[(start + k) % n];
+
+                // positions 0..m, both ends fixed at 0.
+                // value[i] computed via monotonic stack (like max rectangle / trapping water with equality constraints)
+                long[] value = new long[m + 1];
+                value[0] = 0;
+                value[m] = 0;
+
+                // stack holds indices with increasing eh, we process left to right
+                // dp[i] = min(eh[i-1], dp[i-1]) capped so that segments merge when a lower wall is found
+                Deque<int[]> stack = new ArrayDeque<>(); // {position, height}
+                stack.push(new int[]{0, Integer.MAX_VALUE}); // sentinel, height "infinite" at pos0 boundary before actual 0
+
+                // We'll do two-pass: prefix constrained value assuming monotonic stack merging
+                long[] left = new long[m + 1];
+                left[0] = Long.MAX_VALUE; // free
+                Deque<long[]> st1 = new ArrayDeque<>(); // {value}
+                for (int i = 1; i <= m; i++) {
+                    long cur = eh[i - 1];
+                    left[i] = Math.min(left[i - 1], cur);
+                }
+
+                long[] right = new long[m + 1];
+                right[m] = Long.MAX_VALUE;
+                for (int i = m - 1; i >= 0; i--) {
+                    right[i] = Math.min(right[i + 1], eh[i]);
+                }
+
+                long sum = 0;
+                for (int i = 1; i < m; i++) {
+                    sum += Math.min(left[i], right[i]);
+                }
+                ans[start] = sum;
+            }
+
+            for (int i = 0; i < n; i++) {
+                sb.append(ans[i]);
+                if (i < n - 1) sb.append(' ');
+            }
+            sb.append('\n');
+        }
+        System.out.print(sb);
+    }
+}
