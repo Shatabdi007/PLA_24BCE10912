@@ -1,0 +1,104 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0) return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() throws IOException {
+            StringBuilder sb = new StringBuilder();
+            int c;
+            while ((c = read()) != -1 && c <= ' ') ;
+            while (c != -1 && c > ' ') {
+                sb.append((char) c);
+                c = read();
+            }
+            return sb.toString();
+        }
+
+        int nextInt() throws IOException {
+            return Integer.parseInt(next());
+        }
+
+        long nextLong() throws IOException {
+            return Long.parseLong(next());
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        FastScanner fs = new FastScanner();
+        StringBuilder out = new StringBuilder();
+
+        int T = fs.nextInt();
+
+        while (T-- > 0) {
+            int n = fs.nextInt();
+            String s = fs.next();
+
+            long[] a = new long[n];
+            for (int i = 0; i < n; i++) a[i] = fs.nextLong();
+
+            long[] c = new long[n];
+            for (int i = 0; i < n; i++) c[i] = fs.nextLong();
+
+            long pref = 0;
+            long mx = Long.MIN_VALUE / 4;
+            boolean ok = true;
+
+            for (int i = 0; i < n && ok; i++) {
+                if (s.charAt(i) == '1') {
+                    pref += a[i];
+                    if (mx == Long.MIN_VALUE / 4) mx = pref;
+                    else mx = Math.max(mx, pref);
+
+                    if (mx != c[i]) ok = false;
+                } else {
+                    if (i == 0) {
+                        a[i] = c[i];
+                    } else {
+                        if (c[i] < mx) {
+                            ok = false;
+                            break;
+                        }
+                        if (c[i] == mx) {
+                            a[i] = -400000000000000000L;
+                        } else {
+                            a[i] = c[i] - pref;
+                        }
+                    }
+
+                    pref += a[i];
+                    if (mx == Long.MIN_VALUE / 4) mx = pref;
+                    else mx = Math.max(mx, pref);
+
+                    if (mx != c[i]) ok = false;
+                }
+            }
+
+            if (!ok) {
+                out.append("No\n");
+            } else {
+                out.append("Yes\n");
+                for (int i = 0; i < n; i++) {
+                    if (i > 0) out.append(' ');
+                    out.append(a[i]);
+                }
+                out.append('\n');
+            }
+        }
+
+        System.out.print(out.toString());
+    }
+}
