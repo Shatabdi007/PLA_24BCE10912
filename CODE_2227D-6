@@ -1,0 +1,90 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0) return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        int nextInt() throws IOException {
+            int c;
+            while ((c = read()) <= ' ') ;
+            int sign = 1;
+            if (c == '-') {
+                sign = -1;
+                c = read();
+            }
+            int val = 0;
+            while (c > ' ') {
+                val = val * 10 + (c - '0');
+                c = read();
+            }
+            return val * sign;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        FastScanner fs = new FastScanner();
+        StringBuilder out = new StringBuilder();
+
+        int T = fs.nextInt();
+
+        while (T-- > 0) {
+            int n = fs.nextInt();
+            int m = 2 * n;
+
+            int[] a = new int[m];
+            int[] first = new int[n];
+            int[] second = new int[n];
+            Arrays.fill(first, -1);
+
+            for (int i = 0; i < m; i++) {
+                a[i] = fs.nextInt();
+                if (first[a[i]] == -1)
+                    first[a[i]] = i;
+                else
+                    second[a[i]] = i;
+            }
+
+            int L = 0;
+            int R = m - 1;
+            int ans = 0;
+
+            while (ans < n) {
+                int x = ans;
+
+                boolean ok = false;
+
+                if (first[x] == L && second[x] == R) {
+                    ok = true;
+                } else if (first[x] == L && second[x] < R) {
+                    L++;
+                    R = second[x] - 1;
+                    ok = true;
+                } else if (second[x] == R && first[x] > L) {
+                    R--;
+                    L = first[x] + 1;
+                    ok = true;
+                }
+
+                if (!ok) break;
+                ans++;
+            }
+
+            out.append(ans).append('\n');
+        }
+
+        System.out.print(out);
+    }
+}
