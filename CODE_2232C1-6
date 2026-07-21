@@ -1,0 +1,118 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static final int NEG = -1_000_000_000;
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0) return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        String next() throws IOException {
+            StringBuilder sb = new StringBuilder();
+            int c;
+
+            do {
+                c = read();
+            } while (c <= ' ' && c != -1);
+
+            while (c > ' ') {
+                sb.append((char) c);
+                c = read();
+            }
+
+            return sb.toString();
+        }
+
+        int nextInt() throws IOException {
+            return Integer.parseInt(next());
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        FastScanner fs = new FastScanner();
+        StringBuilder out = new StringBuilder();
+
+        int t = fs.nextInt();
+
+        while (t-- > 0) {
+            int n = fs.nextInt();
+            int x = fs.nextInt();
+            int s = fs.nextInt();
+            String str = fs.next();
+
+            int[] max = new int[x + 1];
+            int[] below = new int[x + 1];
+
+            Arrays.fill(max, NEG);
+            Arrays.fill(below, NEG);
+
+            // 0 tables, 0 people
+            max[0] = 0;
+
+            for (int pos = 0; pos < n; pos++) {
+                char c = str.charAt(pos);
+
+                // Copy states because we may skip the current person
+                int[] nextMax = max.clone();
+                int[] nextBelow = below.clone();
+
+                for (int tables = 0; tables <= x; tables++) {
+
+                    // E or A sits at an already non-empty table
+                    if ((c == 'E' || c == 'A') && below[tables] != NEG) {
+                        int seats = below[tables] + 1;
+
+                        nextMax[tables] =
+                                Math.max(nextMax[tables], seats);
+
+                        if (seats < tables * s) {
+                            nextBelow[tables] =
+                                    Math.max(nextBelow[tables], seats);
+                        }
+                    }
+
+                    // I or A opens a new table
+                    if ((c == 'I' || c == 'A')
+                            && tables < x
+                            && max[tables] != NEG) {
+
+                        int seats = max[tables] + 1;
+
+                        nextMax[tables + 1] =
+                                Math.max(nextMax[tables + 1], seats);
+
+                        if (seats < (tables + 1) * s) {
+                            nextBelow[tables + 1] =
+                                    Math.max(nextBelow[tables + 1], seats);
+                        }
+                    }
+                }
+
+                max = nextMax;
+                below = nextBelow;
+            }
+
+            int answer = 0;
+
+            for (int tables = 0; tables <= x; tables++) {
+                answer = Math.max(answer, max[tables]);
+            }
+
+            out.append(answer).append('\n');
+        }
+
+        System.out.print(out);
+    }
+}
