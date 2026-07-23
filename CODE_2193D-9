@@ -1,0 +1,78 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            long[] a = new long[n];
+            for (int i = 0; i < n; i++) a[i] = nextInt(in);
+            long[] b = new long[n];
+            for (int i = 0; i < n; i++) b[i] = nextInt(in);
+
+            long[] sortedA = a.clone();
+            Arrays.sort(sortedA);
+
+            long[] pre = new long[n + 1];
+            for (int i = 0; i < n; i++) pre[i + 1] = pre[i] + b[i];
+
+            long ans = 0;
+            for (int i = 0; i < n; i++) {
+                long x = a[i];
+                // count of elements >= x in sortedA
+                int idx = lowerBound(sortedA, x); // first index with sortedA[idx] >= x
+                long count = n - idx;
+                // find max k in [0, n] such that pre[k] <= count
+                int k = upperBoundPre(pre, count);
+                long score = x * (long) k;
+                if (score > ans) ans = score;
+            }
+            sb.append(ans).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    // first index where arr[idx] >= key
+    static int lowerBound(long[] arr, long key) {
+        int lo = 0, hi = arr.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (arr[mid] >= key) hi = mid;
+            else lo = mid + 1;
+        }
+        return lo;
+    }
+
+    // max k such that pre[k] <= count, pre is strictly increasing (pre[0]=0)
+    static int upperBoundPre(long[] pre, long count) {
+        int lo = 0, hi = pre.length - 1; // answer in [0, n]
+        int ans = 0;
+        while (lo <= hi) {
+            int mid = (lo + hi) >>> 1;
+            if (pre[mid] <= count) {
+                ans = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return ans;
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') { /* not expected here since all positive */ }
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
