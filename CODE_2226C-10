@@ -1,0 +1,161 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static int[] a;
+    static int n;
+    static int[] exactStart;
+    static int[] greaterStart;
+    static int[] parent;
+
+    // Find first unused index >= x
+    static int find(int x) {
+        if (parent[x] == x) return x;
+        return parent[x] = find(parent[x]);
+    }
+
+    // Remove index x
+    static void remove(int x) {
+        parent[x] = find(x + 1);
+    }
+
+    static boolean can(int k) {
+        // Initialize DSU
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+        }
+
+        // Process required values from largest to smallest
+        for (int x = k - 1; x >= 0; x--) {
+
+            // First try to use exact value x
+            int idx = find(exactStart[x]);
+
+            if (idx < n && a[idx] == x) {
+                remove(idx);
+            } else {
+                // Otherwise need a value > 2*x
+                idx = find(greaterStart[x]);
+
+                if (idx == n) {
+                    return false;
+                }
+
+                remove(idx);
+            }
+        }
+
+        return true;
+    }
+
+    static int lowerBound(int[] arr, int target) {
+        int l = 0, r = arr.length;
+
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+
+            if (arr[mid] < target)
+                l = mid + 1;
+            else
+                r = mid;
+        }
+
+        return l;
+    }
+
+    static int upperBound(int[] arr, int target) {
+        int l = 0, r = arr.length;
+
+        while (l < r) {
+            int mid = (l + r) >>> 1;
+
+            if (arr[mid] <= target)
+                l = mid + 1;
+            else
+                r = mid;
+        }
+
+        return l;
+    }
+
+    public static void main(String[] args) throws Exception {
+        FastScanner fs = new FastScanner();
+        StringBuilder out = new StringBuilder();
+
+        int t = fs.nextInt();
+
+        while (t-- > 0) {
+            n = fs.nextInt();
+            a = new int[n];
+
+            for (int i = 0; i < n; i++) {
+                a[i] = fs.nextInt();
+            }
+
+            Arrays.sort(a);
+
+            exactStart = new int[n];
+            greaterStart = new int[n];
+            parent = new int[n + 1];
+
+            for (int x = 0; x < n; x++) {
+                exactStart[x] = lowerBound(a, x);
+                greaterStart[x] = upperBound(a, 2 * x);
+            }
+
+            int low = 0;
+            int high = n;
+
+            while (low < high) {
+                int mid = (low + high + 1) >>> 1;
+
+                if (can(mid)) {
+                    low = mid;
+                } else {
+                    high = mid - 1;
+                }
+            }
+
+            out.append(low).append('\n');
+        }
+
+        System.out.print(out);
+    }
+
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0;
+        private int len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+
+                if (len <= 0)
+                    return -1;
+            }
+
+            return buffer[ptr++];
+        }
+
+        int nextInt() throws IOException {
+            int c;
+
+            do {
+                c = read();
+            } while (c <= ' ');
+
+            int num = 0;
+
+            while (c > ' ') {
+                num = num * 10 + (c - '0');
+                c = read();
+            }
+
+            return num;
+        }
+    }
+}
