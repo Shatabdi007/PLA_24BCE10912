@@ -1,0 +1,60 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
+
+public final class Main {
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int t = Integer.parseInt(br.readLine().trim());
+        StringBuilder sb = new StringBuilder();
+
+        while (t-- > 0) {
+            int n = Integer.parseInt(br.readLine().trim());
+            String s = br.readLine().trim();
+
+            // openCount[k] = number of '(' in s[0..k-1] (prefix count)
+            int[] openCount = new int[n + 1];
+            for (int k = 1; k <= n; k++) {
+                openCount[k] = openCount[k - 1] + (s.charAt(k - 1) == '(' ? 1 : 0);
+            }
+            int totalOpen = openCount[n]; // = n / 2
+
+            // nextOpen[i] = nearest position j > i (1-indexed) with s[j-1] == '(', or 0 if none
+            int[] nextOpen = new int[n + 2];
+            int nextOpenPos = 0;
+            for (int i = n; i >= 1; i--) {
+                nextOpen[i] = nextOpenPos;
+                if (s.charAt(i - 1) == '(') {
+                    nextOpenPos = i;
+                }
+            }
+
+            int best = -1; // -1 means "not found" sentinel (delta is always >= 1)
+            for (int i = 1; i <= n; i++) {
+                if (s.charAt(i - 1) == ')') {
+                    int j = nextOpen[i];
+                    if (j == 0) {
+                        continue;
+                    }
+                    int delta = j - i;
+                    int opensAfterJ = totalOpen - openCount[j];
+                    if (opensAfterJ >= delta) {
+                        if (best == -1 || delta < best) {
+                            best = delta;
+                        }
+                    }
+                }
+            }
+
+            if (best == -1) {
+                sb.append(-1).append('\n');
+            } else {
+                sb.append(n - 2 * best).append('\n');
+            }
+        }
+
+        System.out.print(sb);
+    }
+}
