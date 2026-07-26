@@ -1,0 +1,37 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int t = Integer.parseInt(br.readLine().trim());
+        StringBuilder sb = new StringBuilder();
+        
+        while (t-- > 0) {
+            StringTokenizer st = new StringTokenizer(br.readLine());
+            int n = Integer.parseInt(st.nextToken());
+            int k = Integer.parseInt(st.nextToken());
+            String s = br.readLine().trim();
+            
+            int count = 0;
+            int lastGuaranteed = -1000000; // sentinel far away
+            
+            for (int i = 0; i < n; i++) {
+                if (s.charAt(i) == '1') {
+                    if (i - lastGuaranteed <= k - 1) {
+                        // blocked by previous guaranteed 1, safe without protection
+                        lastGuaranteed = i;
+                    } else {
+                        // must protect
+                        count++;
+                        lastGuaranteed = i;
+                    }
+                }
+            }
+            
+            sb.append(count).append("\n");
+        }
+        
+        System.out.print(sb);
+    }
+}
