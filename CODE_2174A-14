@@ -1,0 +1,84 @@
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int T = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+
+        while (T-- > 0) {
+            char[] s = nextToken(in);
+            char[] t = nextToken(in);
+            int m = s.length, n = t.length;
+
+            int[] cnt = new int[26];
+            int[] need = new int[26];
+            for (int k = 0; k < n; k++) cnt[t[k] - 'a']++;
+            for (int k = 0; k < m; k++) need[s[k] - 'a']++;
+
+            boolean feasible = true;
+            for (int c = 0; c < 26; c++) {
+                if (cnt[c] < need[c]) { feasible = false; break; }
+            }
+
+            if (!feasible) {
+                sb.append("Impossible\n");
+                continue;
+            }
+
+            char[] res = new char[n];
+            int i = 0;
+
+            for (int pos = 0; pos < n; pos++) {
+                int chosen = -1;
+                for (int c = 0; c < 26; c++) {
+                    if (cnt[c] <= 0) continue;
+                    boolean matches = (i < m && (s[i] - 'a') == c);
+                    if (matches) {
+                        chosen = c;
+                        break;
+                    } else {
+                        if (cnt[c] - 1 >= need[c]) {
+                            chosen = c;
+                            break;
+                        }
+                    }
+                }
+                res[pos] = (char) ('a' + chosen);
+                cnt[chosen]--;
+                if (i < m && (s[i] - 'a') == chosen) {
+                    need[chosen]--;
+                    i++;
+                }
+            }
+
+            sb.append(res, 0, n).append('\n');
+        }
+
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + b - '0';
+            b = in.read();
+        }
+        return ret;
+    }
+
+    private static char[] nextToken(DataInputStream in) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        int b = in.read();
+        while (b == ' ' || b == '\n' || b == '\r' || b == '\t') b = in.read();
+        while (b >= 'a' && b <= 'z') {
+            sb.append((char) b);
+            b = in.read();
+        }
+        char[] arr = new char[sb.length()];
+        sb.getChars(0, sb.length(), arr, 0);
+        return arr;
+    }
+}
