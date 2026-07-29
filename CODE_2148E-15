@@ -1,0 +1,59 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            int k = nextInt(in);
+            int[] a = new int[n];
+            int[] cnt = new int[n + 1];
+            for (int i = 0; i < n; i++) {
+                a[i] = nextInt(in);
+                cnt[a[i]]++;
+            }
+            boolean ok = true;
+            int[] m = new int[n + 1];
+            for (int v = 1; v <= n; v++) {
+                if (cnt[v] % k != 0) {
+                    ok = false;
+                }
+                m[v] = cnt[v] / k;
+            }
+            if (!ok) {
+                sb.append(0).append('\n');
+                continue;
+            }
+            int[] freq = new int[n + 1];
+            long ans = 0;
+            int l = 0;
+            for (int r = 0; r < n; r++) {
+                int v = a[r];
+                freq[v]++;
+                while (freq[v] > m[v]) {
+                    freq[a[l]]--;
+                    l++;
+                }
+                ans += (long) (r - l + 1);
+            }
+            sb.append(ans).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
