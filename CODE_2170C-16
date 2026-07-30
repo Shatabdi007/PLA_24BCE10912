@@ -1,0 +1,68 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            long k = nextLong(in);
+            long[] q = new long[n];
+            for (int i = 0; i < n; i++) q[i] = nextLong(in);
+            long[] r = new long[n];
+            for (int i = 0; i < n; i++) r[i] = nextLong(in);
+
+            long[] thresh = new long[n];
+            for (int i = 0; i < n; i++) {
+                thresh[i] = Math.floorDiv(k - r[i], r[i] + 1);
+            }
+
+            Arrays.sort(q);
+            Arrays.sort(thresh);
+
+            int i = 0, count = 0;
+            for (int j = 0; j < n; j++) {
+                if (i < n && q[i] <= thresh[j]) {
+                    count++;
+                    i++;
+                }
+            }
+            sb.append(count).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') break;
+            b = in.read();
+        }
+        boolean neg = false;
+        if (b == '-') { neg = true; b = in.read(); }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return neg ? -ret : ret;
+    }
+
+    private static long nextLong(DataInputStream in) throws IOException {
+        long ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') break;
+            b = in.read();
+        }
+        boolean neg = false;
+        if (b == '-') { neg = true; b = in.read(); }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return neg ? -ret : ret;
+    }
+}
