@@ -1,0 +1,57 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        StringBuilder sb = new StringBuilder();
+
+        int t = nextInt(in);
+        while (t-- > 0) {
+            int n = nextInt(in);
+            long[] S = new long[n + 1];
+            for (int i = 1; i <= n; i++) {
+                int ai = nextInt(in);
+                S[i] = S[i - 1] + ai;
+            }
+
+            long total = S[n];
+            long maxB = Long.MIN_VALUE;
+            long maxGain = 0L; // operation is optional, so gain can be 0
+
+            for (int r = 1; r <= n; r++) {
+                long rL = r;
+                long Br = S[r - 1] - rL * rL + rL;
+                if (Br > maxB) maxB = Br;
+
+                long Ar = rL * rL + rL - S[r];
+                long candidate = Ar + maxB;
+                if (candidate > maxGain) maxGain = candidate;
+            }
+
+            long answer = total + maxGain;
+            sb.append(answer).append('\n');
+        }
+
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') break;
+            b = in.read();
+        }
+        boolean neg = false;
+        if (b == '-') {
+            neg = true;
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return neg ? -ret : ret;
+    }
+}
