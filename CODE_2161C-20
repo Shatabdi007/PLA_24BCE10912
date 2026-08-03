@@ -1,0 +1,68 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = (int) nextLong(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = (int) nextLong(in);
+            long X = nextLong(in);
+            long[] a = new long[n];
+            long total = 0;
+            for (int idx = 0; idx < n; idx++) { a[idx] = nextLong(in); total += a[idx]; }
+
+            long[] sorted = a.clone();
+            Arrays.sort(sorted); // ascending
+
+            int L = (int) (total / X);
+            int m = n - L;
+
+            long[] fillers = new long[m];
+            long[] crossers = new long[L];
+            for (int k = 0; k < m; k++) fillers[k] = sorted[k];
+            for (int k = 0; k < L; k++) crossers[k] = sorted[m + k];
+
+            long bonus = 0;
+            for (long v : crossers) bonus += v;
+            sb.append(bonus).append('\n');
+
+            long S = 0;
+            int i = 0, j = 0;
+            StringBuilder line = new StringBuilder();
+            for (int cnt = 0; cnt < n; cnt++) {
+                long val;
+                if (j == L) {
+                    val = fillers[i++];
+                } else {
+                    long level = S / X;
+                    long threshold = (level + 1) * X;
+                    if (i < m && S + fillers[i] < threshold) {
+                        val = fillers[i++];
+                    } else {
+                        val = crossers[j++];
+                    }
+                }
+                S += val;
+                line.append(val);
+                if (cnt != n - 1) line.append(' ');
+            }
+            sb.append(line).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static long nextLong(DataInputStream in) throws IOException {
+        long ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
