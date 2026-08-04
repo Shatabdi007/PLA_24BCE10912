@@ -1,0 +1,98 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    static class FastScanner {
+        private final InputStream in = System.in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0, len = 0;
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+                if (len <= 0) return -1;
+            }
+            return buffer[ptr++];
+        }
+
+        int nextInt() throws IOException {
+            int c;
+            while ((c = read()) <= ' ') ;
+            int sign = 1;
+            if (c == '-') {
+                sign = -1;
+                c = read();
+            }
+            int val = 0;
+            while (c > ' ') {
+                val = val * 10 + (c - '0');
+                c = read();
+            }
+            return val * sign;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        FastScanner fs = new FastScanner();
+        StringBuilder out = new StringBuilder();
+
+        int T = fs.nextInt();
+
+        while (T-- > 0) {
+            int n = fs.nextInt();
+            int k = fs.nextInt();
+
+            int[] a = new int[n];
+            int[] sorted = new int[n];
+            for (int i = 0; i < n; i++) {
+                a[i] = fs.nextInt();
+                sorted[i] = a[i];
+            }
+
+            Arrays.sort(sorted);
+            int x = sorted[k - 1];
+
+            ArrayList<Integer> b = new ArrayList<>();
+            int lessCnt = 0;
+            for (int v : a) {
+                if (v <= x) {
+                    b.add(v);
+                    if (v < x) lessCnt++;
+                }
+            }
+
+            int l = 0, r = b.size() - 1;
+            int keptX = 0;
+            boolean ok = true;
+
+            while (l <= r) {
+                if (b.get(l).equals(b.get(r))) {
+                    if (l == r) {
+                        if (b.get(l) == x) keptX++;
+                    } else {
+                        if (b.get(l) == x) keptX += 2;
+                    }
+                    l++;
+                    r--;
+                } else {
+                    if (b.get(l) == x) {
+                        l++;
+                    } else if (b.get(r) == x) {
+                        r--;
+                    } else {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+
+            int needKeep = (k - 1) - lessCnt;
+            if (needKeep < 0) needKeep = 0;
+
+            out.append(ok && keptX >= needKeep ? "YES\n" : "NO\n");
+        }
+
+        System.out.print(out);
+    }
+}
