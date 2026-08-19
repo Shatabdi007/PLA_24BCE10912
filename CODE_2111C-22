@@ -1,0 +1,47 @@
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        int t = sc.nextInt();
+
+        while (t-- > 0) {
+            int n = sc.nextInt();
+
+            int[] a = new int[n];
+
+            for (int i = 0; i < n; i++) {
+                a[i] = sc.nextInt();
+            }
+
+            // longest consecutive occurrence of each value
+            int[] longest = new int[n + 1];
+
+            int count = 1;
+
+            for (int i = 0; i < n; i++) {
+                if (i > 0 && a[i] == a[i - 1]) {
+                    count++;
+                } else {
+                    count = 1;
+                }
+
+                longest[a[i]] = Math.max(longest[a[i]], count);
+            }
+
+            long answer = Long.MAX_VALUE;
+
+            for (int value = 1; value <= n; value++) {
+                if (longest[value] > 0) {
+                    long cost = (long) (n - longest[value]) * value;
+                    answer = Math.min(answer, cost);
+                }
+            }
+
+            System.out.println(answer);
+        }
+
+        sc.close();
+    }
+}
