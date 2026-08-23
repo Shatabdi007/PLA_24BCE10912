@@ -1,0 +1,78 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            int q = nextInt(in);
+            int[] a = new int[n + 1];
+            for (int i = 1; i <= n; i++) a[i] = nextInt(in);
+
+            int m = n - 1; // size of diff array (1..m)
+            int[] d = new int[m + 1];
+            for (int i = 1; i <= m; i++) {
+                d[i] = Math.abs(a[i + 1] - a[i]);
+            }
+
+            int LOG = 1;
+            while ((1 << LOG) <= m) LOG++;
+            // sparse[k][i] = gcd of d[i..i + 2^k - 1], 1-indexed, k from 0..LOG-1
+            int[][] sparse = null;
+            int[] log2 = new int[m + 2];
+            if (m >= 1) {
+                sparse = new int[LOG][m + 1];
+                for (int i = 1; i <= m; i++) sparse[0][i] = d[i];
+                for (int k = 1; k < LOG; k++) {
+                    int half = 1 << (k - 1);
+                    int len = 1 << k;
+                    for (int i = 1; i + len - 1 <= m; i++) {
+                        sparse[k][i] = gcd(sparse[k - 1][i], sparse[k - 1][i + half]);
+                    }
+                }
+                log2[1] = 0;
+                for (int i = 2; i <= m + 1; i++) log2[i] = log2[i / 2] + 1;
+            }
+
+            for (int query = 0; query < q; query++) {
+                int l = nextInt(in);
+                int r = nextInt(in);
+                if (l == r) {
+                    sb.append(0);
+                } else {
+                    int dl = l;
+                    int dr = r - 1;
+                    int len = dr - dl + 1;
+                    int k = log2[len];
+                    int res = gcd(sparse[k][dl], sparse[k][dr - (1 << k) + 1]);
+                    sb.append(res);
+                }
+                sb.append(query == q - 1 ? '\n' : ' ');
+            }
+        }
+        System.out.print(sb);
+    }
+
+    private static int gcd(int a, int b) {
+        while (b != 0) {
+            int tmp = a % b;
+            a = b;
+            b = tmp;
+        }
+        return a;
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
