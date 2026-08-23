@@ -1,0 +1,48 @@
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            long n = nextLong(in);
+            long k = nextLong(in);
+            long L = n, Sum = 1, count = 1, ans = 0;
+            while (L >= k) {
+                if ((L & 1L) == 1L) {
+                    ans += Sum + count * ((L - 1) / 2);
+                }
+                long half = L / 2;
+                long o = L - half;
+                Sum = 2 * Sum + o * count;
+                count *= 2;
+                L = half;
+            }
+            sb.append(ans).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+
+    private static long nextLong(DataInputStream in) throws IOException {
+        long ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
