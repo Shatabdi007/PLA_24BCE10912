@@ -1,0 +1,51 @@
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int l = nextInt(in);
+            int r = nextInt(in);
+            // n = r - l + 1, l is guaranteed 0 in this (easy) version
+            long ans = (long) r * (r + 1);
+
+            int[] partner = new int[r + 1];
+            int cur = r;
+            while (cur >= 0) {
+                if (cur == 0) {
+                    partner[0] = 0;
+                    break;
+                }
+                int H = Integer.highestOneBit(cur);
+                int s = cur - H + 1;
+                for (int k = 0; k < s; k++) {
+                    int u = H + k;
+                    int v = H - 1 - k;
+                    partner[u] = v;
+                    partner[v] = u;
+                }
+                cur = H - s - 1;
+            }
+
+            sb.append(ans).append('\n');
+            for (int i = 0; i <= r; i++) {
+                sb.append(partner[i]);
+                sb.append(i == r ? '\n' : ' ');
+            }
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
