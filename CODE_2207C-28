@@ -1,0 +1,111 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        final int MAXN = 2005;
+        int[] a = new int[MAXN];
+        long[] g = new long[MAXN];
+        long[] hleft = new long[MAXN];
+        long[] RightExt = new long[MAXN];
+        long[] LeftExt = new long[MAXN];
+        int[] stackIdx = new int[MAXN];
+        int[] D1 = new int[MAXN];
+        long[] prefD1 = new long[MAXN];
+        int[] valStack = new int[MAXN];
+        int[] startStack = new int[MAXN];
+        long[] contribStack = new long[MAXN];
+
+        while (t-- > 0) {
+            int n = nextInt(in);
+            long h = nextInt(in);
+            for (int i = 1; i <= n; i++) a[i] = nextInt(in);
+
+            // g[c] = sum_{j=c}^{n} max(a[c..j])  via next-greater-or-equal (right to left)
+            int top = -1;
+            for (int c = n; c >= 1; c--) {
+                while (top >= 0 && a[stackIdx[top]] < a[c]) top--;
+                int k = (top < 0) ? n + 1 : stackIdx[top];
+                long gk = (k <= n) ? g[k] : 0L;
+                g[c] = (long) a[c] * (k - c) + gk;
+                stackIdx[++top] = c;
+            }
+            for (int c = 1; c <= n; c++) {
+                RightExt[c] = (long) (n - c) * h - (g[c] - a[c]);
+            }
+
+            // hleft[c] = sum_{j=1}^{c} max(a[j..c]) via previous-greater-or-equal (left to right)
+            top = -1;
+            for (int c = 1; c <= n; c++) {
+                while (top >= 0 && a[stackIdx[top]] < a[c]) top--;
+                int k = (top < 0) ? 0 : stackIdx[top];
+                long hk = (k >= 1) ? hleft[k] : 0L;
+                hleft[c] = (long) a[c] * (c - k) + hk;
+                stackIdx[++top] = c;
+            }
+            for (int c = 1; c <= n; c++) {
+                LeftExt[c] = (long) (c - 1) * h - (hleft[c] - a[c]);
+            }
+
+            long answer = 0;
+            for (int c1 = 1; c1 <= n; c1++) {
+                int curMax = 0;
+                prefD1[c1 - 1] = 0;
+                for (int j = c1; j <= n; j++) {
+                    if (a[j] > curMax) curMax = a[j];
+                    D1[j] = curMax;
+                    prefD1[j] = prefD1[j - 1] + D1[j];
+                }
+                int stop = -1;
+                long sumMin = 0;
+                long leftExtC1 = LeftExt[c1];
+                for (int c2 = c1; c2 <= n; c2++) {
+                    int x = a[c2];
+                    int newStart = c2;
+                    while (stop >= 0 && valStack[stop] < x) {
+                        sumMin -= contribStack[stop];
+                        newStart = startStack[stop];
+                        stop--;
+                    }
+                    // binary search smallest j0 in [newStart, c2] with D1[j0] >= x
+                    int lo = newStart, hi = c2 + 1;
+                    while (lo < hi) {
+                        int mid = (lo + hi) >>> 1;
+                        if (D1[mid] >= x) hi = mid; else lo = mid + 1;
+                    }
+                    int j0 = lo;
+                    long sum1 = (j0 > newStart) ? (prefD1[j0 - 1] - prefD1[newStart - 1]) : 0L;
+                    long cnt2 = c2 - j0 + 1;
+                    long sum2 = (long) x * cnt2;
+                    long contribution = sum1 + sum2;
+                    stop++;
+                    valStack[stop] = x;
+                    startStack[stop] = newStart;
+                    contribStack[stop] = contribution;
+                    sumMin += contribution;
+
+                    long midTotal = (long) (c2 - c1 + 1) * h - sumMin;
+                    long total = leftExtC1 + midTotal + RightExt[c2];
+                    if (total > answer) answer = total;
+                }
+            }
+            sb.append(answer).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0, b;
+        do {
+            b = in.read();
+        } while (b < '0' || b > '9');
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + b - '0';
+            b = in.read();
+        }
+        return ret;
+    }
+}
