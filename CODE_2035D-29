@@ -1,0 +1,86 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    static final long MOD = 1_000_000_007L;
+    static final int CAP = 30; // 2^30 > 1e9 >= any base value
+
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        StringBuilder sb = new StringBuilder();
+
+        int t = nextInt(in);
+        while (t-- > 0) {
+            int n = nextInt(in);
+            long[] baseVal = new long[n + 1];
+            long[] modPw2 = new long[n + 1];
+            int[] cmpExp = new int[n + 1];
+            int top = 0; // stack size, indices 1..top
+
+            long total = 0;
+
+            for (int i = 1; i <= n; i++) {
+                long a = nextInt(in);
+                int p = Long.numberOfTrailingZeros(a);
+                long x = a >> p;
+
+                long pw2mod = 1L;
+                for (int k = 0; k < p; k++) {
+                    pw2mod = (pw2mod * 2) % MOD;
+                }
+                int exp = Math.min(p, CAP);
+
+                while (top > 0) {
+                    long tv = baseVal[top];
+                    boolean merge;
+                    if (exp >= CAP) {
+                        merge = true;
+                    } else {
+                        long val = x << exp; // safe: x <= 1e9, exp < 30
+                        merge = (tv < val);
+                    }
+                    if (!merge) {
+                        break;
+                    }
+
+                    // pop
+                    long tPw2 = modPw2[top];
+                    int tExp = cmpExp[top];
+                    top--;
+
+                    total = (total - (tv % MOD) * tPw2 % MOD + MOD) % MOD;
+                    total = (total + tv) % MOD;
+
+                    pw2mod = pw2mod * tPw2 % MOD;
+                    int newExp = exp + tExp;
+                    exp = Math.min(newExp, CAP);
+                }
+
+                top++;
+                baseVal[top] = x;
+                modPw2[top] = pw2mod;
+                cmpExp[top] = exp;
+
+                total = (total + (x % MOD) * pw2mod) % MOD;
+
+                sb.append(total);
+                sb.append(i == n ? '\n' : ' ');
+            }
+        }
+
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
