@@ -1,0 +1,70 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    static PrintWriter pw;
+    static StreamTokenizer st;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+        st = new StreamTokenizer(br);
+
+        st.nextToken(); int t = (int) st.nval;
+        while (t-- > 0) {
+            st.nextToken(); int n = (int) st.nval;
+            int N = 2 * n + 1;
+
+            // Step 1: find q = position of the THIRD (last) occurrence of the triple value
+            int lo = 0, hi = N; // f(0)=0 (match), f(N)=0 (mismatch) -- both known, no query needed
+            while (hi - lo > 1) {
+                int mid = (lo + hi) / 2;
+                int f = query(1, mid, -1);
+                if ((f % 2) != (mid % 2)) hi = mid; else lo = mid;
+            }
+            int q = hi;
+
+            // Step 2: find p2 = second occurrence, using anchor {q}
+            lo = 0; hi = q - 1; // h(0)=1 (mismatch), h(q-1) match -- both known analytically
+            while (hi - lo > 1) {
+                int mid = (lo + hi) / 2;
+                int h = query(1, mid, q);
+                boolean match = (h % 2) == (mid % 2);
+                if (match) hi = mid; else lo = mid;
+            }
+            int p2 = hi;
+
+            // Step 3: find p1 = first occurrence, comparing plain prefix vs anchored-by-q prefix
+            lo = 0; hi = p2 - 1; // d(0)=+1, d(p2-1)=-1 -- both known analytically
+            while (hi - lo > 1) {
+                int mid = (lo + hi) / 2;
+                int f = query(1, mid, -1);
+                int h = query(1, mid, q);
+                int d = h - f;
+                if (d < 0) hi = mid; else lo = mid;
+            }
+            int p1 = hi;
+
+            pw.println("! " + p1 + " " + p2 + " " + q);
+            pw.flush();
+        }
+        pw.flush();
+    }
+
+    // Query prefix [from..to] plus optional extra index (extra <= 0 means none)
+    static int query(int from, int to, int extra) throws IOException {
+        int k = (to - from + 1) + (extra > 0 ? 1 : 0);
+        StringBuilder sb = new StringBuilder();
+        sb.append("? ").append(k);
+        for (int i = from; i <= to; i++) sb.append(' ').append(i);
+        if (extra > 0) sb.append(' ').append(extra);
+        pw.println(sb);
+        pw.flush();
+        st.nextToken();
+        int resp = (int) st.nval;
+        if (resp == -1) {
+            System.exit(0);
+        }
+        return resp;
+    }
+}
