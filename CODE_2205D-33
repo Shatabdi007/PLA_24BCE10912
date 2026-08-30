@@ -1,0 +1,68 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            int[] a = new int[n];
+            int[] pos = new int[n + 1];
+            for (int i = 0; i < n; i++) {
+                a[i] = nextInt(in);
+                pos[a[i]] = i;
+            }
+            int[] left = new int[n];
+            int[] right = new int[n];
+            Arrays.fill(left, -1);
+            Arrays.fill(right, -1);
+            int[] stack = new int[n];
+            int top = -1;
+            for (int i = 0; i < n; i++) {
+                int last = -1;
+                while (top >= 0 && a[stack[top]] < a[i]) {
+                    last = stack[top];
+                    top--;
+                }
+                if (last != -1) {
+                    left[i] = last;
+                }
+                if (top >= 0) {
+                    right[stack[top]] = i;
+                }
+                stack[++top] = i;
+            }
+            int[] size = new int[n];
+            int[] f = new int[n];
+            for (int v = 1; v <= n; v++) {
+                int node = pos[v];
+                int l = left[node];
+                int r = right[node];
+                int lsz = (l == -1) ? 0 : size[l];
+                int rsz = (r == -1) ? 0 : size[r];
+                int lf = (l == -1) ? 0 : f[l];
+                int rf = (r == -1) ? 0 : f[r];
+                size[node] = 1 + lsz + rsz;
+                f[node] = Math.min(lsz + rf, rsz + lf);
+            }
+            int root = pos[n];
+            sb.append(f[root]).append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b != -1 && (b < '0' || b > '9')) {
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
