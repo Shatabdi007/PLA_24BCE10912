@@ -1,0 +1,99 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            int[] a = new int[n];
+            for (int i = 0; i < n; i++) a[i] = nextInt(in);
+
+            int Lo = (n + 1) / 2, Le = n / 2;
+            int[] O = new int[Lo];
+            int[] E = new int[Le];
+            int oi = 0, ei = 0;
+            for (int i = 0; i < n; i++) {
+                if (i % 2 == 0) O[oi++] = a[i];
+                else E[ei++] = a[i];
+            }
+
+            int parityO = inversionParity(O);
+            int parityE = inversionParity(E);
+
+            int[] Os = O.clone();
+            Arrays.sort(Os);
+            int[] Es = E.clone();
+            Arrays.sort(Es);
+
+            if (parityO != parityE) {
+                int p1 = 2 * Lo - 3;
+                int q1 = 2 * Le - 2;
+                if (p1 < q1) {
+                    int tmp = Es[Le - 1];
+                    Es[Le - 1] = Es[Le - 2];
+                    Es[Le - 2] = tmp;
+                } else {
+                    int tmp = Os[Lo - 1];
+                    Os[Lo - 1] = Os[Lo - 2];
+                    Os[Lo - 2] = tmp;
+                }
+            }
+
+            int[] res = new int[n];
+            for (int k = 0; k < Lo; k++) res[2 * k] = Os[k];
+            for (int k = 0; k < Le; k++) res[2 * k + 1] = Es[k];
+
+            for (int i = 0; i < n; i++) {
+                sb.append(res[i]);
+                sb.append(i == n - 1 ? '\n' : ' ');
+            }
+        }
+        System.out.print(sb);
+    }
+
+    static int inversionParity(int[] arr) {
+        int n = arr.length;
+        Integer[] idx = new Integer[n];
+        for (int i = 0; i < n; i++) idx[i] = i;
+        Arrays.sort(idx, (x, y) -> arr[x] - arr[y]);
+        int[] rank = new int[n];
+        for (int i = 0; i < n; i++) rank[idx[i]] = i + 1;
+
+        int[] tree = new int[n + 2];
+        long invCount = 0;
+        for (int i = n - 1; i >= 0; i--) {
+            invCount += query(tree, rank[i] - 1);
+            update(tree, rank[i], n);
+        }
+        return (int) (invCount & 1);
+    }
+
+    static void update(int[] tree, int i, int size) {
+        for (; i <= size; i += i & (-i)) tree[i]++;
+    }
+
+    static int query(int[] tree, int i) {
+        int s = 0;
+        for (; i > 0; i -= i & (-i)) s += tree[i];
+        return s;
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') break;
+            b = in.read();
+        }
+        boolean neg = false;
+        if (b == '-') { neg = true; b = in.read(); }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return neg ? -ret : ret;
+    }
+}
