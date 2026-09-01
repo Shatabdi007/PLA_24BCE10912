@@ -1,0 +1,67 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+
+        int MAXV = 200001;
+        int[] posInB = new int[MAXV + 1];
+        Arrays.fill(posInB, -1);
+
+        while (t-- > 0) {
+            int n = nextInt(in);
+            int[] a = new int[n];
+            int[] b = new int[n];
+            for (int i = 0; i < n; i++) a[i] = nextInt(in);
+            for (int i = 0; i < n; i++) b[i] = nextInt(in);
+
+            for (int j = 0; j < n; j++) posInB[b[j]] = j;
+
+            boolean ok = true;
+            int[] c = new int[n];
+            for (int i = 0; i < n; i++) {
+                int v = a[i];
+                if (v > MAXV || posInB[v] == -1) {
+                    ok = false;
+                } else {
+                    c[i] = posInB[v];
+                }
+            }
+
+            if (ok) {
+                boolean[] visited = new boolean[n];
+                int cycles = 0;
+                for (int i = 0; i < n; i++) {
+                    if (!visited[i]) {
+                        cycles++;
+                        int j = i;
+                        while (!visited[j]) {
+                            visited[j] = true;
+                            j = c[j];
+                        }
+                    }
+                }
+                ok = ((n - cycles) % 2 == 0);
+            }
+
+            for (int j = 0; j < n; j++) posInB[b[j]] = -1; // reset used entries only
+
+            sb.append(ok ? "YES" : "NO").append('\n');
+        }
+        System.out.print(sb);
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+}
