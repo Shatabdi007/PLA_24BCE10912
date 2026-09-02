@@ -1,0 +1,111 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    static long answer;
+    static int[] left, right, b;
+
+    public static void main(String[] args) {
+        new Thread(null, Main::run, "main", 1 << 26).start();
+    }
+
+    static void run() {
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            String line;
+            int t = 0;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (!line.isEmpty()) { t = Integer.parseInt(line); break; }
+            }
+            StringBuilder sb = new StringBuilder();
+            for (int tc = 0; tc < t; tc++) {
+                String s = null;
+                while ((s = br.readLine()) != null) {
+                    s = s.trim();
+                    if (!s.isEmpty()) break;
+                }
+                int n = s.length();
+                b = new int[n + 1];
+                for (int i = 0; i < n; i++) {
+                    b[i + 1] = b[i] + (s.charAt(i) == '(' ? 1 : -1);
+                }
+                int m = n + 1;
+                left = new int[m];
+                right = new int[m];
+                Arrays.fill(left, -1);
+                Arrays.fill(right, -1);
+                int[] stack = new int[m];
+                int top = -1;
+                for (int i = 0; i < m; i++) {
+                    int last = -1;
+                    while (top >= 0 && b[stack[top]] < b[i]) {
+                        last = stack[top];
+                        top--;
+                    }
+                    if (last != -1) left[i] = last;
+                    if (top >= 0) right[stack[top]] = i;
+                    stack[++top] = i;
+                }
+                int root = stack[0];
+                answer = 0;
+                process(root);
+                sb.append(answer).append('\n');
+            }
+            System.out.print(sb);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static HashMap<Integer, Integer> process(int i) {
+        if (i == -1) return null;
+        HashMap<Integer, Integer> L = process(left[i]);
+        HashMap<Integer, Integer> R = process(right[i]);
+        int M = b[i];
+        int threshold = (M + 1) / 2; // ceil(M/2)
+
+        if (L != null && R != null) {
+            HashMap<Integer, Integer> small = L.size() <= R.size() ? L : R;
+            HashMap<Integer, Integer> big = (small == L) ? R : L;
+            for (Map.Entry<Integer, Integer> e : small.entrySet()) {
+                int k = e.getKey();
+                if (k >= threshold) {
+                    Integer c = big.get(k);
+                    if (c != null) answer += (long) e.getValue() * c;
+                }
+            }
+        }
+        if (L != null) {
+            Integer c = L.get(M);
+            if (c != null) answer += c;
+        }
+        if (R != null) {
+            Integer c = R.get(M);
+            if (c != null) answer += c;
+        }
+
+        HashMap<Integer, Integer> merged;
+        if (L == null && R == null) {
+            merged = new HashMap<>();
+        } else if (L == null) {
+            merged = R;
+        } else if (R == null) {
+            merged = L;
+        } else {
+            if (L.size() >= R.size()) {
+                merged = L;
+                for (Map.Entry<Integer, Integer> e : R.entrySet()) {
+                    merged.merge(e.getKey(), e.getValue(), Integer::sum);
+                }
+            } else {
+                merged = R;
+                for (Map.Entry<Integer, Integer> e : L.entrySet()) {
+                    merged.merge(e.getKey(), e.getValue(), Integer::sum);
+                }
+            }
+        }
+        merged.merge(M, 1, Integer::sum);
+        return merged;
+    }
+}
