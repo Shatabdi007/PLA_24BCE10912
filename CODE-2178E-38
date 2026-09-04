@@ -1,0 +1,84 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    static StringTokenizer st;
+
+    static long query(int l, int r) throws Exception {
+        System.out.println("? " + l + " " + r);
+        System.out.flush();
+
+        long x = Long.parseLong(br.readLine().trim());
+
+        if (x == -1) {
+            System.exit(0);
+        }
+
+        return x;
+    }
+
+    static void solve(int n) throws Exception {
+        int l = 1;
+        int r = n;
+
+        // Total sum of the current interval
+        long sum = query(l, r);
+
+        while (l < r) {
+
+            // Both parts after the last concatenate
+            // have the same sum.
+            long half = sum / 2;
+
+            // Find first position where
+            // sum(l, mid) >= half
+            int low = l;
+            int high = r - 1;
+
+            while (low <= high) {
+                int mid = (low + high) / 2;
+
+                long leftSum = query(l, mid);
+
+                if (leftSum < half) {
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+            }
+
+            // low is the split position.
+            int split = low;
+
+            int leftLength = split - l + 1;
+            int rightLength = r - split;
+
+            // The shorter part contains the maximum.
+            if (leftLength <= rightLength) {
+                r = split;
+            } else {
+                l = split + 1;
+            }
+
+            // The chosen part has sum = half.
+            sum = half;
+        }
+
+        // l == r, so sum is the maximum element.
+        System.out.println("! " + sum);
+        System.out.flush();
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        int t = Integer.parseInt(br.readLine().trim());
+
+        while (t-- > 0) {
+            int n = Integer.parseInt(br.readLine().trim());
+
+            solve(n);
+        }
+    }
+}
