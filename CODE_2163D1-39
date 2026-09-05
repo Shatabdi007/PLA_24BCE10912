@@ -1,0 +1,106 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    static DataInputStream in;
+    static PrintWriter out;
+
+    public static void main(String[] args) throws IOException {
+        in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+        int t = nextInt();
+        while (t-- > 0) {
+            int n = nextInt();
+            int q = nextInt();
+            int[] arr = new int[n + 2];
+            for (int i = 0; i < q; i++) {
+                int l = nextInt();
+                int r = nextInt();
+                if (r > arr[l]) arr[l] = r;
+            }
+            int[] best = new int[n + 2];
+            for (int l = 1; l <= n; l++) best[l] = Math.max(best[l - 1], arr[l]);
+
+            Solver solver = new Solver(n, best);
+            int ans = solver.solve();
+            out.println("! " + ans);
+            out.flush();
+        }
+        out.flush();
+    }
+
+    static int nextInt() throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+
+    static class Solver {
+        int n;
+        int[] best;
+        HashMap<Long, Integer> memo = new HashMap<>();
+
+        Solver(int n, int[] best) {
+            this.n = n;
+            this.best = best;
+        }
+
+        int query(int l, int r) throws IOException {
+            if (l == 1 && r == n) return n; // trivial, whole permutation
+            long key = (long) l * 20005L + r;
+            Integer cached = memo.get(key);
+            if (cached != null) return cached;
+            out.println("? " + l + " " + r);
+            out.flush();
+            int v = nextInt();
+            memo.put(key, v);
+            return v;
+        }
+
+        // smallest r in [1,n] such that mex(1,r) >= X  (1<=X<=n-1 guaranteed by caller)
+        int findR(int X) throws IOException {
+            int lo = 1, hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                int v = query(1, mid);
+                if (v >= X) hi = mid; else lo = mid + 1;
+            }
+            return lo;
+        }
+
+        // largest l in [1,n] such that mex(l,n) >= X
+        int findL(int X) throws IOException {
+            int lo = 1, hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi + 1) / 2;
+                int v = query(mid, n);
+                if (v >= X) lo = mid; else hi = mid - 1;
+            }
+            return lo;
+        }
+
+        boolean check(int X) throws IOException {
+            if (X == 0) return true;
+            if (X == n) return best[1] >= n; // need a range exactly [1,n]
+            int R = findR(X);
+            int L = findL(X);
+            return best[L] >= R;
+        }
+
+        int solve() throws IOException {
+            int lo = 0, hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi + 1) / 2;
+                if (check(mid)) lo = mid; else hi = mid - 1;
+            }
+            return lo;
+        }
+    }
+}
