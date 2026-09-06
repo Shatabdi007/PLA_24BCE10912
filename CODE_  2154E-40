@@ -1,0 +1,193 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static long[] pref;
+    static long[] a;
+    static int n, k;
+
+    // Calculate the value for a fixed median a[idx]
+    // and l = number of elements we effectively raise per operation.
+    static long calc(int idx, int l) {
+        /*
+         * Formula:
+         *
+         * total sum
+         * - elements that are removed from the right side
+         * - elements used from the first l*k positions
+         * + (k+1)*l copies of a[idx]
+         */
+        return pref[n]
+                - (pref[idx + l + 1] - pref[idx + 1])
+                - pref[l * k]
+                + (long) (k + 1) * l * a[idx];
+    }
+
+    public static void main(String[] args) throws Exception {
+
+        FastScanner fs = new FastScanner(System.in);
+        StringBuilder out = new StringBuilder();
+
+        int T = fs.nextInt();
+
+        while (T-- > 0) {
+
+            n = fs.nextInt();
+            k = fs.nextInt();
+
+            a = new long[n];
+
+            for (int i = 0; i < n; i++) {
+                a[i] = fs.nextLong();
+            }
+
+            Arrays.sort(a);
+
+            // Prefix sums
+            pref = new long[n + 1];
+
+            for (int i = 0; i < n; i++) {
+                pref[i + 1] = pref[i] + a[i];
+            }
+
+            long answer = pref[n];
+
+            /*
+             * Case where the number of elements we need to
+             * raise is determined directly by k.
+             */
+            for (int i = 0; i < n; i++) {
+
+                int r = (i + k - 1) / k;
+
+                if (i + r < n) {
+                    long candidate =
+                            (long) (i + 1 + r) * a[i]
+                            + pref[n]
+                            - pref[i + 1 + r];
+
+                    answer = Math.max(answer, candidate);
+                }
+            }
+
+            /*
+             * Main case.
+             *
+             * Fix a[i] as the median.
+             *
+             * l <= i/k
+             * l <= n-1-i
+             *
+             * Therefore:
+             *
+             * l <= min(i/k, n-1-i)
+             *
+             * The function is unimodal, so:
+             * - brute force when the range is small
+             * - ternary search when it is large
+             */
+            for (int i = 0; i < n; i++) {
+
+                int maxL = Math.min(i / k, n - 1 - i);
+
+                if (maxL <= 100) {
+
+                    // Small range: brute force
+                    for (int l = 1; l <= maxL; l++) {
+                        answer = Math.max(answer, calc(i, l));
+                    }
+
+                } else {
+
+                    // Large range: ternary search
+                    int left = 0;
+                    int right = maxL;
+
+                    while (right - left >= 5) {
+
+                        int m1 = (2 * left + right) / 3;
+                        int m2 = (left + 2 * right) / 3;
+
+                        long v1 = calc(i, m1);
+                        long v2 = calc(i, m2);
+
+                        answer = Math.max(answer, Math.max(v1, v2));
+
+                        if (v1 >= v2) {
+                            right = m2;
+                        }
+
+                        if (v2 >= v1) {
+                            left = m1;
+                        }
+                    }
+
+                    // Check the remaining small range
+                    for (int l = left; l <= right; l++) {
+                        answer = Math.max(answer, calc(i, l));
+                    }
+                }
+            }
+
+            out.append(answer).append('\n');
+        }
+
+        System.out.print(out);
+    }
+
+    // Fast input
+    static class FastScanner {
+
+        private final InputStream in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0;
+        private int len = 0;
+
+        FastScanner(InputStream is) {
+            in = is;
+        }
+
+        private int read() throws IOException {
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+
+                if (len <= 0) {
+                    return -1;
+                }
+            }
+
+            return buffer[ptr++];
+        }
+
+        long nextLong() throws IOException {
+
+            int c;
+
+            do {
+                c = read();
+            } while (c <= ' ');
+
+            boolean negative = false;
+
+            if (c == '-') {
+                negative = true;
+                c = read();
+            }
+
+            long res = 0;
+
+            while (c > ' ') {
+                res = res * 10 + (c - '0');
+                c = read();
+            }
+
+            return negative ? -res : res;
+        }
+
+        int nextInt() throws IOException {
+            return (int) nextLong();
+        }
+    }
+}
