@@ -1,0 +1,40 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        StreamTokenizer in = new StreamTokenizer(new BufferedReader(new InputStreamReader(System.in)));
+        in.nextToken();
+        int t = (int) in.nval;
+        StringBuilder sb = new StringBuilder();
+        final long N = 1_000_000_000_000L; // 10^12
+
+        while (t-- > 0) {
+            in.nextToken(); long x = (long) in.nval;
+            in.nextToken(); long y = (long) in.nval;
+            in.nextToken(); long k = (long) in.nval;
+
+            long ans;
+            if (y == 1) {
+                // First operation removes every element (positions 1..n all multiples of 1)
+                ans = -1;
+            } else {
+                long p = k;
+                long remaining = x;
+                while (remaining > 0) {
+                    long q = (p - 1) / (y - 1);
+                    if (q == 0) break; // stable: position < y never changes
+                    long blockEnd = (q + 1) * (y - 1);
+                    long s = (blockEnd - p) / q + 1;
+                    if (s > remaining) s = remaining;
+                    p += s * q;
+                    remaining -= s;
+                    if (p > N) break;
+                }
+                ans = (p <= N) ? p : -1;
+            }
+            sb.append(ans).append('\n');
+        }
+        System.out.print(sb);
+    }
+}
