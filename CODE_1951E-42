@@ -1,0 +1,95 @@
+import java.io.*;
+
+public class Main {
+    static final long MOD1 = 1_000_000_007L;
+    static final long MOD2 = 998_244_353L;
+    static final long BASE1 = 131;
+    static final long BASE2 = 137;
+    static long[] pow1, pow2;
+
+    public static void main(String[] args) throws IOException {
+        int MAXN = 1_000_006;
+        pow1 = new long[MAXN];
+        pow2 = new long[MAXN];
+        pow1[0] = 1; pow2[0] = 1;
+        for (int i = 1; i < MAXN; i++) {
+            pow1[i] = (pow1[i-1] * BASE1) % MOD1;
+            pow2[i] = (pow2[i-1] * BASE2) % MOD2;
+        }
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in), 1 << 20);
+        int t = Integer.parseInt(br.readLine().trim());
+        StringBuilder sb = new StringBuilder();
+
+        while (t-- > 0) {
+            String s = br.readLine().trim();
+            int n = s.length();
+
+            if (!isPalindrome(s)) {
+                sb.append("YES\n");
+                sb.append(1).append('\n');
+                sb.append(s).append('\n');
+                continue;
+            }
+
+            StringBuilder revB = new StringBuilder(s);
+            revB.reverse();
+            String rev = revB.toString();
+
+            long[] fh1 = new long[n+1];
+            long[] fh2 = new long[n+1];
+            long[] rh1 = new long[n+1];
+            long[] rh2 = new long[n+1];
+
+            for (int i = 0; i < n; i++) {
+                fh1[i+1] = (fh1[i]*BASE1 + s.charAt(i)) % MOD1;
+                fh2[i+1] = (fh2[i]*BASE2 + s.charAt(i)) % MOD2;
+                rh1[i+1] = (rh1[i]*BASE1 + rev.charAt(i)) % MOD1;
+                rh2[i+1] = (rh2[i]*BASE2 + rev.charAt(i)) % MOD2;
+            }
+
+            int foundI = -1;
+            for (int i = 1; i <= n-1; i++) {
+                if (!isPal(fh1, fh2, rh1, rh2, n, 0, i-1) && !isPal(fh1, fh2, rh1, rh2, n, i, n-1)) {
+                    foundI = i;
+                    break;
+                }
+            }
+
+            if (foundI == -1) {
+                sb.append("NO\n");
+            } else {
+                sb.append("YES\n");
+                sb.append(2).append('\n');
+                sb.append(s, 0, foundI).append(' ').append(s, foundI, n).append('\n');
+            }
+        }
+
+        System.out.print(sb);
+    }
+
+    static boolean isPalindrome(String s) {
+        int l = 0, r = s.length()-1;
+        while (l < r) {
+            if (s.charAt(l) != s.charAt(r)) return false;
+            l++; r--;
+        }
+        return true;
+    }
+
+    static boolean isPal(long[] fh1, long[] fh2, long[] rh1, long[] rh2, int n, int l, int r) {
+        if (l >= r) return true;
+        long h1 = getHash(fh1, pow1, MOD1, l, r);
+        long h2 = getHash(fh2, pow2, MOD2, l, r);
+        int l2 = n-1-r, r2 = n-1-l;
+        long g1 = getHash(rh1, pow1, MOD1, l2, r2);
+        long g2 = getHash(rh2, pow2, MOD2, l2, r2);
+        return h1==g1 && h2==g2;
+    }
+
+    static long getHash(long[] h, long[] pw, long mod, int l, int r) {
+        long res = (h[r+1] - (h[l]*pw[r-l+1]) % mod) % mod;
+        if (res < 0) res += mod;
+        return res;
+    }
+}
