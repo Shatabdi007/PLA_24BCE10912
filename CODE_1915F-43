@@ -1,0 +1,109 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    static int[] bit;
+    static int N;
+
+    static void update(int i) {
+        for (; i <= N; i += i & (-i)) bit[i]++;
+    }
+
+    static int query(int i) {
+        int s = 0;
+        for (; i > 0; i -= i & (-i)) s += bit[i];
+        return s;
+    }
+
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1 << 16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+
+        while (t-- > 0) {
+            int n = nextInt(in);
+            long[] a = new long[n];
+            long[] b = new long[n];
+            for (int i = 0; i < n; i++) {
+                a[i] = nextLong(in);
+                b[i] = nextLong(in);
+            }
+
+            // coordinate compress b values
+            long[] sortedB = b.clone();
+            Arrays.sort(sortedB);
+            // rank of a value v: index in sortedB (1-based)
+            
+            // create order of indices sorted by a descending
+            Integer[] order = new Integer[n];
+            for (int i = 0; i < n; i++) order[i] = i;
+            Arrays.sort(order, (x, y) -> Long.compare(a[y], a[x])); // descending by a
+
+            N = n;
+            bit = new int[N + 1];
+
+            long answer = 0;
+
+            for (int idx : order) {
+                long bv = b[idx];
+                int rank = lowerBound(sortedB, bv) + 1; // 1-based rank
+                // count of already inserted values with b_j < bv -> rank-1 prefix
+                answer += query(rank - 1);
+                update(rank);
+            }
+
+            sb.append(answer).append('\n');
+        }
+
+        System.out.print(sb);
+    }
+
+    // returns index of first element == value (since values distinct after using original b array for ranks)
+    static int lowerBound(long[] arr, long key) {
+        int lo = 0, hi = arr.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (arr[mid] < key) lo = mid + 1;
+            else hi = mid;
+        }
+        return lo;
+    }
+
+    // Fast input reading
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0;
+        int b = in.read();
+        while (b < '0' || b > '9') {
+            if (b == '-') {
+                b = in.read();
+                int val = 0;
+                while (b >= '0' && b <= '9') {
+                    val = val * 10 + (b - '0');
+                    b = in.read();
+                }
+                return -val;
+            }
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return ret;
+    }
+
+    private static long nextLong(DataInputStream in) throws IOException {
+        long ret = 0;
+        int b = in.read();
+        boolean neg = false;
+        while (b < '0' || b > '9') {
+            if (b == '-') neg = true;
+            b = in.read();
+        }
+        while (b >= '0' && b <= '9') {
+            ret = ret * 10 + (b - '0');
+            b = in.read();
+        }
+        return neg ? -ret : ret;
+    }
+}
