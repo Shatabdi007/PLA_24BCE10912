@@ -1,0 +1,48 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StreamTokenizer in = new StreamTokenizer(br);
+        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+
+        in.nextToken();
+        int t = (int) in.nval;
+
+        for (int tc = 0; tc < t; tc++) {
+            in.nextToken();
+            int n = (int) in.nval;
+            int[] parent = new int[n + 1];
+
+            for (int v = 2; v <= n; v++) {
+                int cur = 1;
+                while (true) {
+                    out.println("? " + v + " " + cur);
+                    out.flush();
+                    in.nextToken();
+                    int resp = (int) in.nval;
+                    if (resp == -1) {
+                        return; // safety: shouldn't happen within budget
+                    }
+                    if (resp == v) {
+                        parent[v] = cur;
+                        break;
+                    } else {
+                        cur = resp;
+                    }
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("!");
+            for (int v = 2; v <= n; v++) {
+                sb.append(" ").append(parent[v]).append(" ").append(v);
+            }
+            out.println(sb.toString());
+            out.flush();
+        }
+
+        out.flush();
+    }
+}
