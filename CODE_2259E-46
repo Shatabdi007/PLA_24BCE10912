@@ -1,0 +1,67 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        StreamTokenizer st = new StreamTokenizer(new BufferedInputStream(System.in, 1 << 16));
+        st.nextToken(); int t = (int) st.nval;
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            st.nextToken(); int n = (int) st.nval;
+            int[] b = new int[n];
+            for (int i = 0; i < n; i++) { st.nextToken(); b[i] = (int) st.nval; }
+
+            boolean[] TreasureMapFin = new boolean[n];
+            int[] diff = new int[n + 2];
+
+            for (int i = 0; i < n; i++) {
+                if (b[i] == 0) {
+                    TreasureMapFin[i] = true;
+                } else if (b[i] > 0) {
+                    int v = b[i];
+                    int l = Math.max(0, i - v + 1);
+                    int r = Math.min(n - 1, i + v - 1);
+                    diff[l]++;
+                    diff[r + 1]--;
+                }
+            }
+
+            boolean[] forcedFalse = new boolean[n];
+            int cur = 0;
+            for (int i = 0; i < n; i++) {
+                cur += diff[i];
+                forcedFalse[i] = cur > 0;
+            }
+
+            boolean feasible = true;
+            for (int i = 0; i < n; i++) {
+                if (TreasureMapFin[i] && forcedFalse[i]) { feasible = false; break; }
+            }
+
+            if (feasible) {
+                for (int i = 0; i < n && feasible; i++) {
+                    if (b[i] > 0) {
+                        int v = b[i];
+                        int c1 = i - v, c2 = i + v;
+                        boolean c1ok = c1 >= 0 && c1 < n && !forcedFalse[c1];
+                        boolean c2ok = c2 >= 0 && c2 < n && !forcedFalse[c2];
+                        if (c1ok) TreasureMapFin[c1] = true;
+                        else if (c2ok) TreasureMapFin[c2] = true;
+                        else feasible = false;
+                    }
+                }
+            }
+
+            if (!feasible) {
+                sb.append(-1).append('\n');
+            } else {
+                boolean any = false;
+                for (int i = 0; i < n; i++) if (TreasureMapFin[i]) { any = true; break; }
+                if (!any) TreasureMapFin[0] = true;
+                for (int i = 0; i < n; i++) sb.append(TreasureMapFin[i] ? '1' : '0');
+                sb.append('\n');
+            }
+        }
+        System.out.print(sb);
+    }
+}
