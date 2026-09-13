@@ -1,0 +1,47 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int t = Integer.parseInt(br.readLine().trim());
+        StringBuilder sb = new StringBuilder();
+
+        while (t-- > 0) {
+            long X = Long.parseLong(br.readLine().trim());
+
+            // We build the array so that total increasing subsequences
+            // (including the empty one) equals X.
+            // Trick: let U start at 1 (U = S+1, where S = sum of dp[] over
+            // all elements). Appending a "new maximum" element doubles U
+            // (U -> 2U). Appending a "new minimum" element does U -> U+1.
+            // So we just replay the binary representation of X (skipping
+            // the leading 1 bit) as a sequence of double / double+1 steps.
+
+            String bin = Long.toBinaryString(X); // starts with '1'
+            List<Integer> arr = new ArrayList<>();
+
+            int maxCounter = 1;   // for "new maximum" elements (increasing distinct positive values)
+            int minCounter = -1;  // for "new minimum" elements (decreasing distinct negative values)
+
+            for (int i = 1; i < bin.length(); i++) {
+                char c = bin.charAt(i);
+                // append a new maximum element -> doubles U
+                arr.add(maxCounter++);
+                if (c == '1') {
+                    // append a new minimum element -> U += 1
+                    arr.add(minCounter--);
+                }
+            }
+
+            sb.append(arr.size()).append('\n');
+            for (int i = 0; i < arr.size(); i++) {
+                if (i > 0) sb.append(' ');
+                sb.append(arr.get(i));
+            }
+            sb.append('\n');
+        }
+
+        System.out.print(sb);
+    }
+}
