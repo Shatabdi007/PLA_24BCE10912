@@ -1,0 +1,116 @@
+import java.util.*;
+import java.io.*;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(System.in, 1<<16));
+        int t = nextInt(in);
+        StringBuilder sb = new StringBuilder();
+        while (t-- > 0) {
+            int n = nextInt(in);
+            int q = nextInt(in);
+            int[] a = new int[n + 1];
+            int[] fenw = new int[n + 1];
+            for (int i = 1; i <= n; i++) a[i] = nextInt(in);
+            for (int i = 1; i <= n; i++) addFenw(fenw, n, i, a[i]);
+
+            int WORDS = (2 * n) / 64 + 4;
+            long[] R = new long[WORDS];
+            int p = 0;
+            setBit(R, 0);
+            for (int i = 1; i <= n; i++) { p += a[i]; setBit(R, p); }
+
+            for (int Q = 0; Q < q; Q++) {
+                int op = nextInt(in);
+                if (op == 1) {
+                    int s = nextInt(in);
+                    sb.append(query(R, WORDS, s) ? "YES" : "NO").append('\n');
+                } else {
+                    int idx = nextInt(in);
+                    int v = nextInt(in);
+                    int old = a[idx];
+                    if (old != v) {
+                        int posBase = prefixFenw(fenw, idx - 1);
+                        int insertPos = posBase + 1;
+                        if (v > old) insertZero(R, WORDS, insertPos);
+                        else deleteBit(R, WORDS, insertPos);
+                        addFenw(fenw, n, idx, v - old);
+                        a[idx] = v;
+                    }
+                }
+            }
+        }
+        System.out.print(sb);
+    }
+
+    static void setBit(long[] R, int p) { R[p >>> 6] |= (1L << (p & 63)); }
+
+    static void insertZero(long[] R, int WORDS, int p) {
+        int off = p & 63;
+        int loWord = p >>> 6;
+        long W = R[loWord];
+        long lowMask = off == 0 ? 0L : ((1L << off) - 1);
+        long highMaskExcl = off == 63 ? 0L : (~((1L << (off + 1)) - 1));
+        long newLo = (W & lowMask) | ((W << 1) & highMaskExcl);
+        long carry = (W >>> 63) & 1L;
+        R[loWord] = newLo;
+        for (int wi = loWord + 1; wi < WORDS; wi++) {
+            long w = R[wi];
+            long nw = (w << 1) | carry;
+            carry = (w >>> 63) & 1L;
+            R[wi] = nw;
+        }
+    }
+
+    static void deleteBit(long[] R, int WORDS, int p) {
+        int off = p & 63;
+        int loWord = p >>> 6;
+        long carry = 0;
+        for (int wi = WORDS - 1; wi > loWord; wi--) {
+            long w = R[wi];
+            long nw = (w >>> 1) | (carry << 63);
+            long nextCarry = w & 1L;
+            R[wi] = nw;
+            carry = nextCarry;
+        }
+        long W = R[loWord];
+        long lowMask = off == 0 ? 0L : ((1L << off) - 1);
+        long maskFromOff = ~lowMask;
+        long highPartNew = ((W >>> 1) | (carry << 63)) & maskFromOff;
+        R[loWord] = (W & lowMask) | highPartNew;
+    }
+
+    static boolean query(long[] R, int WORDS, int s) {
+        int wordShift = s >>> 6;
+        int bitShift = s & 63;
+        for (int i = 0; i < WORDS; i++) {
+            int j = i + wordShift;
+            long shifted;
+            if (j >= WORDS) shifted = 0L;
+            else if (bitShift == 0) shifted = R[j];
+            else {
+                long lo = R[j];
+                long hiPart = (j + 1 < WORDS) ? (R[j + 1] << (64 - bitShift)) : 0L;
+                shifted = (lo >>> bitShift) | hiPart;
+            }
+            if ((R[i] & shifted) != 0L) return true;
+        }
+        return false;
+    }
+
+    static void addFenw(int[] fenw, int n, int i, int delta) {
+        for (; i <= n; i += i & (-i)) fenw[i] += delta;
+    }
+    static int prefixFenw(int[] fenw, int i) {
+        int s = 0;
+        for (; i > 0; i -= i & (-i)) s += fenw[i];
+        return s;
+    }
+
+    private static int nextInt(DataInputStream in) throws IOException {
+        int ret = 0, b = in.read();
+        while (b < '0' || b > '9') b = in.read();
+        while (b >= '0' && b <= '9') { ret = ret * 10 + (b - '0'); b = in.read(); }
+        return ret;
+    }
+}
