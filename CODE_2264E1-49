@@ -1,0 +1,214 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    static final long MOD = 998244353L;
+
+    public static void main(String[] args) throws Exception {
+
+        FastScanner fs = new FastScanner(System.in);
+        StringBuilder out = new StringBuilder();
+
+        int t = fs.nextInt();
+
+        while (t-- > 0) {
+
+            int n = fs.nextInt();
+
+            int[] a = new int[n];
+            int[] cnt = new int[n + 1];
+
+            for (int i = 0; i < n; i++) {
+                a[i] = fs.nextInt();
+                cnt[a[i]]++;
+            }
+
+            // ------------------------------------------------
+            // powers of 2
+            // ------------------------------------------------
+            long[] pow2 = new long[n + 1];
+            pow2[0] = 1;
+
+            for (int i = 1; i <= n; i++) {
+                pow2[i] = (pow2[i - 1] * 2) % MOD;
+            }
+
+            // ------------------------------------------------
+            // prefix count
+            // pref[i] = number of elements <= i
+            // ------------------------------------------------
+            int[] pref = new int[n + 1];
+
+            for (int i = 1; i <= n; i++) {
+                pref[i] = pref[i - 1] + cnt[i];
+            }
+
+            // ------------------------------------------------
+            // Smallest Prime Factor
+            // ------------------------------------------------
+            int[] spf = new int[n + 1];
+
+            for (int i = 0; i <= n; i++) {
+                spf[i] = i;
+            }
+
+            for (int i = 2; i * i <= n; i++) {
+
+                if (spf[i] == i) {
+
+                    for (int j = i * i; j <= n; j += i) {
+
+                        if (spf[j] == j) {
+                            spf[j] = i;
+                        }
+                    }
+                }
+            }
+
+            // ------------------------------------------------
+            // rad[x] = product of distinct prime factors
+            // ------------------------------------------------
+            int[] rad = new int[n + 1];
+
+            rad[1] = 1;
+
+            for (int x = 2; x <= n; x++) {
+
+                int temp = x;
+                int product = 1;
+
+                while (temp > 1) {
+
+                    int p = spf[temp];
+
+                    product *= p;
+
+                    while (temp % p == 0) {
+                        temp /= p;
+                    }
+                }
+
+                rad[x] = product;
+            }
+
+            // ------------------------------------------------
+            // DP
+            // dp[x][y] = f for min=x, max=y
+            // ------------------------------------------------
+            int[][] dp = new int[n + 1][n + 1];
+
+            long ans = 0;
+
+            for (int x = 1; x <= n; x++) {
+
+                // --------------------------------------------
+                // Case x == y
+                // --------------------------------------------
+                dp[x][x] = x;
+
+                long waysSame =
+                        (pow2[cnt[x]] - 1 + MOD) % MOD;
+
+                ans = (ans + waysSame * x) % MOD;
+
+                // --------------------------------------------
+                // Case x < y
+                // --------------------------------------------
+                for (int y = x + 1; y <= n; y++) {
+
+                    // DP transition
+                    if (x % rad[y] == 0) {
+                        dp[x][y] = dp[x - 1][y - 1];
+                    } else {
+                        dp[x][y] = dp[x][y - 1];
+                    }
+
+                    // Number of elements strictly between x and y
+                    int middle = pref[y - 1] - pref[x];
+
+                    // Choose at least one x
+                    long chooseX =
+                            (pow2[cnt[x]] - 1 + MOD) % MOD;
+
+                    // Choose at least one y
+                    long chooseY =
+                            (pow2[cnt[y]] - 1 + MOD) % MOD;
+
+                    // Choose any subset of middle elements
+                    long chooseMiddle = pow2[middle];
+
+                    long ways =
+                            chooseX * chooseY % MOD;
+
+                    ways =
+                            ways * chooseMiddle % MOD;
+
+                    // Contribution
+                    long contribution =
+                            ways * dp[x][y] % MOD;
+
+                    ans += contribution;
+                    ans %= MOD;
+                }
+            }
+
+            out.append(ans).append('\n');
+        }
+
+        System.out.print(out);
+    }
+
+    // --------------------------------------------------------
+    // Fast Scanner
+    // --------------------------------------------------------
+    static class FastScanner {
+
+        private final InputStream in;
+        private final byte[] buffer = new byte[1 << 16];
+        private int ptr = 0;
+        private int len = 0;
+
+        FastScanner(InputStream is) {
+            in = is;
+        }
+
+        private int read() throws IOException {
+
+            if (ptr >= len) {
+                len = in.read(buffer);
+                ptr = 0;
+
+                if (len <= 0) {
+                    return -1;
+                }
+            }
+
+            return buffer[ptr++];
+        }
+
+        int nextInt() throws IOException {
+
+            int c;
+            do {
+                c = read();
+            } while (c <= ' ');
+
+            int sign = 1;
+
+            if (c == '-') {
+                sign = -1;
+                c = read();
+            }
+
+            int res = 0;
+
+            while (c > ' ') {
+                res = res * 10 + (c - '0');
+                c = read();
+            }
+
+            return res * sign;
+        }
+    }
+}
