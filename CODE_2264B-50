@@ -1,0 +1,60 @@
+import java.io.*;
+import java.util.*;
+
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        int t = Integer.parseInt(br.readLine().trim());
+
+        while (t-- > 0) {
+
+            StringTokenizer st = new StringTokenizer(br.readLine());
+
+            int n = Integer.parseInt(st.nextToken());
+            int m = Integer.parseInt(st.nextToken());
+
+            long[] a = new long[n];
+
+            st = new StringTokenizer(br.readLine());
+
+            for (int i = 0; i < n; i++) {
+                a[i] = Long.parseLong(st.nextToken());
+            }
+
+            // Need m-1 elements before the last element
+            int need = m - 1;
+
+            // Max heap: largest among our selected small elements
+            PriorityQueue<Long> pq = new PriorityQueue<>(Collections.reverseOrder());
+
+            long sum = 0;
+            long ans = Long.MIN_VALUE;
+
+            for (int i = 0; i < n; i++) {
+
+                // Current element can be the LAST selected element
+                if (pq.size() == need) {
+                    long score = (long) m * a[i] - sum;
+                    ans = Math.max(ans, score);
+                }
+
+                // Add current element for future choices
+                if (need > 0) {
+
+                    pq.add(a[i]);
+                    sum += a[i];
+
+                    // Keep only the smallest 'need' elements
+                    if (pq.size() > need) {
+                        sum -= pq.poll();
+                    }
+                }
+            }
+
+            System.out.println(ans);
+        }
+    }
+}
